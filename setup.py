@@ -6,7 +6,7 @@ with open(path.join(path.dirname(path.abspath(__file__)), 'README.md')) as f:
 
 setup(
     name='surface_volume_distance',
-    version='1.0.0',
+    version='1.0.1',
     description='Calculate distance from .obj surface to .mnc volume',
     long_description=readme,
     author='Jennings Zhang',

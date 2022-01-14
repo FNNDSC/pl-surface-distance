@@ -77,7 +77,7 @@ inner_chamfer=$tmpdir/chamfer_inner.mnc
 # create a binary mask from painted labels
 bin_mask=$tmpdir/wm_mask.mnc
 if [ "$label" -gt "1" ]; then
-  label=$(bc <<< "$label-0.5")
+  label="$((label-1)).5"  # label = label - 0.5
   [ "$quiet" = "" ] && set -x
   minccalc $quiet -byte -clob -expression "A[0]>$label" $wm_mask $bin_mask
   { set +x; } 2> /dev/null
