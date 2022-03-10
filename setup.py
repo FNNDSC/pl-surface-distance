@@ -5,22 +5,28 @@ with open(path.join(path.dirname(path.abspath(__file__)), 'README.md')) as f:
     readme = f.read()
 
 setup(
-    name='surface_volume_distance',
-    version='1.0.1',
-    description='Calculate distance from .obj surface to .mnc volume',
+    name='pl-surface-distance',
+    version='2.0.0',
+    description=' Distance error of a .obj mask mesh to a .mnc volume.',
     long_description=readme,
+    long_description_content_type='text/markdown',
     author='Jennings Zhang',
     author_email='Jennings.Zhang@childrens.harvard.edu',
-    url='https://github.com/FNNDSC/pl-surface-volume-distance',
-    packages=['surface_volume_distance'],
-    install_requires=['chrisapp'],
+    url='https://github.com/FNNDSC/pl-surface-distance',
+    py_modules=['surfdisterr'],
+    install_requires=['chris_plugin'],
     license='MIT',
-    zip_safe=False,
-    python_requires='>=3.9',
-    scripts=['scripts/chamfer.sh'],
+    python_requires='>=3.10.2',
     entry_points={
         'console_scripts': [
-            'surface_volume_distance = surface_volume_distance.__main__:main'
+            'surfdisterr = surfdisterr:main'
         ]
-    }
+    },
+    scripts=['scripts/chamfer.sh'],
+    classifiers=[
+        'License :: OSI Approved :: MIT License',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Scientific/Engineering :: Bio-Informatics',
+        'Topic :: Scientific/Engineering :: Medical Science Apps.'
+    ]
 )
