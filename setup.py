@@ -5,14 +5,14 @@ with open(path.join(path.dirname(path.abspath(__file__)), 'README.md')) as f:
     readme = f.read()
 
 setup(
-    name='pl-surface-distance',
-    version='2.0.0',
+    name='pl-surfdisterr',
+    version='1.0.0',
     description=' Distance error of a .obj mask mesh to a .mnc volume.',
     long_description=readme,
     long_description_content_type='text/markdown',
     author='Jennings Zhang',
     author_email='Jennings.Zhang@childrens.harvard.edu',
-    url='https://github.com/FNNDSC/pl-surface-distance',
+    url='https://github.com/FNNDSC/pl-surfdisterr',
     py_modules=['surfdisterr'],
     install_requires=['chris_plugin'],
     license='MIT',

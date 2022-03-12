@@ -1,35 +1,35 @@
 # Surface Distance Error
 
-[![Version](https://img.shields.io/docker/v/fnndsc/pl-surface-distance?sort=semver)](https://hub.docker.com/r/fnndsc/pl-surface-distance)
-[![MIT License](https://img.shields.io/github/license/fnndsc/pl-surface-distance)](https://github.com/FNNDSC/pl-surface-distance/blob/main/LICENSE)
-[![ci](https://github.com/FNNDSC/pl-surface-distance/actions/workflows/ci.yml/badge.svg)](https://github.com/FNNDSC/pl-surface-distance/actions/workflows/ci.yml)
+[![Version](https://img.shields.io/docker/v/fnndsc/pl-surfdisterr?sort=semver)](https://hub.docker.com/r/fnndsc/pl-surfdisterr)
+[![MIT License](https://img.shields.io/github/license/fnndsc/pl-surfdisterr)](https://github.com/FNNDSC/pl-surfdisterr/blob/main/LICENSE)
+[![ci](https://github.com/FNNDSC/pl-surfdisterr/actions/workflows/ci.yml/badge.svg)](https://github.com/FNNDSC/pl-surfdisterr/actions/workflows/ci.yml)
 
 ## Abstract
 
-`pl-surface-distance` is a [_ChRIS_](https://chrisproject.org/)
+`pl-surfdisterr` is a [_ChRIS_](https://chrisproject.org/)
 _ds_ plugin which calculates the distance error of surfaces (`.obj`)
 from masks (`.mnc`). It is for assessing the accuracy of surface
 extraction and deformation algorithms.
 
-`pl-surface-distance` can operate on multiple data files in its
+`pl-surfdisterr` can operate on multiple data files in its
 input directory. For every mask in its input directory:
 for every surface in the directory of the mask, compute the
 distance from every vertex of the surface to the mask.
 
-Under the hood, `pl-surface-distance` is a script which calls
+Under the hood, `pl-surfdisterr` is a script which calls
 `mincchamfer` and `volume_object_evaluate`.
 
 ## Installation
 
-`pl-surface-distance` is a _[ChRIS](https://chrisproject.org/) plugin_, meaning it can
+`pl-surfdisterr` is a _[ChRIS](https://chrisproject.org/) plugin_, meaning it can
 run from either within _ChRIS_ or the command-line.
 
-[![Get it from chrisstore.co](https://ipfs.babymri.org/ipfs/QmaQM9dUAYFjLVn3PpNTrpbKVavvSTxNLE5BocRCW1UoXG/light.png)](https://chrisstore.co/plugin/pl-surface-distance)
+[![Get it from chrisstore.co](https://ipfs.babymri.org/ipfs/QmaQM9dUAYFjLVn3PpNTrpbKVavvSTxNLE5BocRCW1UoXG/light.png)](https://chrisstore.co/plugin/pl-surfdisterr)
 
 ## Local Usage
 
 To get started with local command-line usage, use [Apptainer](https://apptainer.org/)
-(a.k.a. Singularity) to run `pl-surface-distance` as a container:
+(a.k.a. Singularity) to run `pl-surfdisterr` as a container:
 
 ```shell
 singularity exec docker://fnndsc/pl-mask-distance surfdisterr input/ output/
