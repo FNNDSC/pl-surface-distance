@@ -5,10 +5,10 @@ import sys
 from pathlib import Path
 from argparse import ArgumentParser, Namespace, ArgumentDefaultsHelpFormatter
 from importlib.metadata import Distribution
-from typing import Optional, Generator
+from typing import Iterator
 import subprocess as sp
-from itertools import repeat
-from concurrent.futures import Executor, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 
 from loguru import logger
 from chris_plugin import chris_plugin, PathMapper
@@ -36,6 +36,8 @@ parser.add_argument('-m', '--mask', default='**/*.mnc',
                     help='pattern for mask file names to include')
 parser.add_argument('-s', '--surface', default='*.obj',
                     help='pattern for surface file names to include')
+parser.add_argument('-o', '--output-suffix', default='.dist.txt', dest='output_suffix',
+                    help='output file name suffix')
 parser.add_argument('-q', '--quiet', action='store_true',
                     help='disable status messages')
 # parser.add_argument('--no-fail', action='store_true', dest='no_fail',
@@ -61,70 +63,66 @@ def main(options: Namespace, inputdir: Path, outputdir: Path):
     else:
         print(DISPLAY_TITLE, file=sys.stderr, flush=True)
 
-    masks = []
-    output_dirs = []
-    for mask, output_dir in PathMapper(inputdir, outputdir, glob=options.mask, suffix=''):
-        masks.append(mask)
-        output_dirs.append(output_dir)
+    logger.debug('Discovering input files...')
+    subjects = [
+        Subject(mask, output_dir, output_dir / Path(mask.name).with_suffix(options.chamfer_suffix))
+        for mask, output_dir in PathMapper(inputdir, outputdir, glob=options.mask, suffix='')
+    ]
+
+    logger.debug('Creating output directories...')
+    for subject in subjects:
+        subject.output_dir.mkdir(parents=True)
 
     nproc = len(os.sched_getaffinity(0))
     logger.debug('Using {} threads.', nproc)
     with ThreadPoolExecutor(max_workers=nproc) as pool:
-        m = pool.map(
-            surface_distance,
-            masks,
-            output_dirs,
-            repeat(options.surface),
-            repeat(options.chamfer_suffix),
-            repeat(options.keep_chamfer),
-            repeat(pool)
-        )
+        m = pool.map(lambda s: s.create_chamfer(), subjects)
+        collect_errors(m)
 
-        # more calls to pool are added by surface_distance to run volume_object_evaluate,
-        # this for-loop no-op prevents the pool from shutting down before the subroutiens
-        # to run volume_object_evaluate are executed.
-        for _ in m:
-            pass
+        tasks_per = (s.gather_tasks(options.surface, options.output_suffix) for s in subjects)
+        all_tasks = (t for tasks_for_subject in tasks_per for t in tasks_for_subject)
+        m = pool.map(lambda t: volume_object_evaluate(*t), all_tasks)
+        collect_errors(m)
 
     logger.debug('done')
 
 
-def surface_distance(mask: Path, output_dir: Path, surface_glob: str, chamfer_suffix: str, keep_chamfer: bool,
-                     pool: Executor):
-    """
-    Create a chamfer (distance map) for the mask and then use it to perform ``volume_object_evaluate``
-    on all surfaces which are found for the mask.
-    """
-    output_dir.mkdir()
-    chamfer = output_dir / Path(mask.name).with_suffix(chamfer_suffix)
-    create_chamfer(mask, chamfer, 0)
+@dataclass(frozen=True)
+class Subject:
+    mask: Path
+    output_dir: Path
+    chamfer: Path
 
-    surfaces = tuple(mask.parent.glob(surface_glob))
-    results = tuple(output_dir / s.relative_to(mask.parent).with_suffix('.dist.txt') for s in surfaces)
+    def create_chamfer(self, label: int = 0) -> None:
+        cmd: list[str] = ['chamfer.sh']
+        if label != 0:
+            cmd += ['-i', str(label)]
+        cmd += [self.mask, self.chamfer]
+        sp.run(cmd, check=True)
+        logger.info('Created chamfer for {}', self.mask)
 
-    for result_file in results:
-        result_file.parent.mkdir(exist_ok=True, parents=True)
+    def gather_tasks(self, surfaces_glob: str, output_suffix: str) -> Iterator[tuple[Path, Path, Path]]:
+        """
+        Find surface files which are siblings (in the same directory) as the mask,
+        and yield the arguments to be passed to ``volume_object_evaluate``.
+        """
+        return (
+            (
+                self.chamfer,
+                surface,
+                self.output_dir / surface.relative_to(self.mask.parent).with_suffix(output_suffix)
+            )
+            for surface in self.mask.parent.glob(surfaces_glob)
+        )
 
-    pool.map(volume_object_evaluate, repeat(chamfer), surfaces, results)
 
-    if not keep_chamfer:
-        chamfer.unlink()
-
-
-def sibling_surfaces(mask: Path, surface_glob: str) -> Generator[Path, None, None]:
-    return mask.parent.glob(surface_glob)
-
-
-def create_chamfer(mask: Path, chamfer: Path, label: Optional[int]):
-    cmd: list[str] = ['chamfer.sh']
-    if label != 0:
-        cmd += ['-i', str(label)]
-    cmd += [str(mask), str(chamfer)]
-    sp.run(cmd, check=True)
-    logger.info('Created chamfer for {}', mask)
+def collect_errors(__m: Iterator) -> None:
+    for _ in __m:
+        pass
 
 
 def volume_object_evaluate(chamfer: Path, surface: Path, result: Path):
+    result.parent.mkdir(exist_ok=True, parents=True)
     cmd = ['volume_object_evaluate', '-linear', chamfer, surface, result]
     sp.run(cmd, check=True)
     logger.info(result)
