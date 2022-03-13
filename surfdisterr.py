@@ -65,13 +65,9 @@ def main(options: Namespace, inputdir: Path, outputdir: Path):
 
     logger.debug('Discovering input files...')
     subjects = [
-        Subject(mask, output_dir, output_dir / Path(mask.name).with_suffix(options.chamfer_suffix))
-        for mask, output_dir in PathMapper(inputdir, outputdir, glob=options.mask, suffix='')
+        Subject(mask, in_output.parent, in_output.parent / Path(mask.name).with_suffix(options.chamfer_suffix))
+        for mask, in_output in PathMapper(inputdir, outputdir, glob=options.mask, suffix='')
     ]
-
-    logger.debug('Creating output directories...')
-    for subject in subjects:
-        subject.output_dir.mkdir(parents=True)
 
     nproc = len(os.sched_getaffinity(0))
     logger.debug('Using {} threads.', nproc)
