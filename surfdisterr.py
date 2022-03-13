@@ -36,7 +36,7 @@ parser.add_argument('-m', '--mask', default='**/*.mnc',
                     help='pattern for mask file names to include')
 parser.add_argument('-s', '--surface', default='*.obj',
                     help='pattern for surface file names to include')
-parser.add_argument('-o', '--output-suffix', default='.dist.txt', dest='output_suffix',
+parser.add_argument('-o', '--output-suffix', default='.disterr.txt', dest='output_suffix',
                     help='output file name suffix')
 parser.add_argument('-q', '--quiet', action='store_true',
                     help='disable status messages')
