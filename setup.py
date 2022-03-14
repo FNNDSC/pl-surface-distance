@@ -6,7 +6,7 @@ with open(path.join(path.dirname(path.abspath(__file__)), 'README.md')) as f:
 
 setup(
     name='pl-surfdisterr',
-    version='1.1.1',
+    version='1.2.0',
     description=' Distance error of a .obj mask mesh to a .mnc volume.',
     long_description=readme,
     long_description_content_type='text/markdown',

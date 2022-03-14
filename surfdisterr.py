@@ -90,7 +90,7 @@ class Subject:
     chamfer: Path
 
     def create_chamfer(self, label: int = 0) -> None:
-        cmd: list[str] = ['chamfer.sh']
+        cmd: list[str] = ['chamfer.sh', '-c', '0.0']
         if label != 0:
             cmd += ['-i', str(label)]
         cmd += [self.mask, self.chamfer]
