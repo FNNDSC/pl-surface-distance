@@ -27,12 +27,12 @@ options:
   -h        show this help message and exit
   -v        verbose output
   -k        keep temporary files
-  -c        boundary value (default: 10.0)
+  -c        boundary value (default: 10)
   -i [1-6]  treats the input as painted labels instead of a binary mask.
             The chamfer is generated around the outer surface of the layer
             as specified by the given isovalue.
               1 = CSF
-              2 = gray matter (corticol plate)
+              2 = gray matter (cortical plate)
               3 = white matter (subplate zone)
               4 = intermediate zone
               5 = subventricular zone
@@ -100,6 +100,10 @@ minccalc $quiet -clob -expression "A[0]<0.5" $wm_mask_defragged $negative_mask
 mincchamfer $quiet -max_dist 5.0 $negative_mask $inner_chamfer
 minccalc $quiet -clob -expression "$iso-A[0]+A[1]" \
          $inner_chamfer $outer_chamfer $output_chamfer
+
+# output volume will be of type image: unsigned byte 0 to 255
+# seems incorrect, I think it should be float, but it works
+# mincreshape $quiet -clobber -signed -float $output_chamfer $float_chamfer
 
 { set +x; } 2> /dev/null
 
