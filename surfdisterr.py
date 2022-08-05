@@ -80,7 +80,10 @@ def main(options: Namespace, inputdir: Path, outputdir: Path):
         m = pool.map(lambda t: volume_object_evaluate(*t), all_tasks)
         collect_errors(m)
 
-    logger.debug('done')
+    if not options.keep_chamfer:
+        for subject in subjects:
+            subject.chamfer.unlink()
+            logger.info('Removed {}', subject.chamfer)
 
 
 @dataclass(frozen=True)
