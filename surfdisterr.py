@@ -66,7 +66,7 @@ def main(options: Namespace, inputdir: Path, outputdir: Path):
     logger.debug('Discovering input files...')
     subjects = [
         Subject(mask, in_output.parent, in_output.parent / Path(mask.name).with_suffix(options.chamfer_suffix))
-        for mask, in_output in PathMapper(inputdir, outputdir, glob=options.mask, suffix='')
+        for mask, in_output in PathMapper.file_mapper(inputdir, outputdir, glob=options.mask, suffix='.obj')
     ]
 
     nproc = len(os.sched_getaffinity(0))
