@@ -31,7 +31,7 @@ DISPLAY_TITLE = r"""
 parser = ArgumentParser(description=' Distance error of a .obj mask mesh to a .mnc volume.',
                         formatter_class=ArgumentDefaultsHelpFormatter)
 parser.add_argument('-V', '--version', action='version',
-                    version=f'$(prog)s {__version__}')
+                    version=f'%(prog)s {__version__}')
 parser.add_argument('-m', '--mask', default='**/*.mnc',
                     help='pattern for mask file names to include')
 parser.add_argument('-s', '--surface', default='*.obj',
