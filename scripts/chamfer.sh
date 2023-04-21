@@ -52,22 +52,22 @@ while getopts ":hvki:c:" opt; do
   h   ) show_help && exit 0 ;;
   v   ) quiet="" ;;
   k   ) keep=1 ;;
-  i   ) label=$OPTARG ;;
-  c   ) iso=$OPTARG ;;
+  i   ) label="$OPTARG" ;;
+  c   ) iso="$OPTARG" ;;
   \?  ) echo "Invalid option: -$OPTARG\nRun $0 -h for help."
     exit 1 ;;
   esac
 done
-shift $((OPTIND-1))
-wm_mask=$1
-output_chamfer=$2
+shift "$((OPTIND-1))"
+wm_mask="$1"
+output_chamfer="$2"
 
 if [ -z "$wm_mask" ] || [ -z "$output_chamfer" ]; then
   echo "Missing filenames, run $0 -h for help."
   exit 1
 fi
 
-tmpdir=$(mktemp -d -t chamfer-$(date +%Hh%M,%S)-XXXXXXXXX)
+tmpdir=$(mktemp -d -t "chamfer-$(date +%Hh%M,%S)-XXXXXXXXX")
 
 wm_mask_defragged=$tmpdir/wm_mask_defragged.mnc
 negative_mask=$tmpdir/wm_mask_negated.mnc
@@ -79,27 +79,27 @@ bin_mask=$tmpdir/wm_mask.mnc
 if [ "$label" -gt "1" ]; then
   label="$((label-1)).5"  # label = label - 0.5
   [ "$quiet" = "" ] && set -x
-  minccalc $quiet -byte -clob -expression "A[0]>$label" $wm_mask $bin_mask
+  minccalc $quiet -byte -clob -expression "A[0]>$label" "$wm_mask" "$bin_mask"
   { set +x; } 2> /dev/null
 else
   # number range must be compatible with mincchamer
-  mincreshape $quiet -image_range 0 255 $wm_mask $bin_mask
+  mincreshape $quiet -image_range 0 255 "$wm_mask" "$bin_mask"
 fi
-wm_mask=$bin_mask
+wm_mask="$bin_mask"
 
 if [ "$quiet" = "" ]; then
   set -x # print commands before running them
-  mincdefrag $wm_mask $wm_mask_defragged 0 6
-  mincdefrag $wm_mask_defragged $wm_mask_defragged 1 6
+  mincdefrag "$wm_mask" "$wm_mask_defragged" 0 6
+  mincdefrag "$wm_mask_defragged" "$wm_mask_defragged" 1 6
 else
-  mincdefrag $wm_mask $wm_mask_defragged 0 6 > /dev/null
-  mincdefrag $wm_mask_defragged $wm_mask_defragged 1 6 > /dev/null
+  mincdefrag "$wm_mask" "$wm_mask_defragged" 0 6 > /dev/null
+  mincdefrag "$wm_mask_defragged" "$wm_mask_defragged" 1 6 > /dev/null
 fi
 mincchamfer $quiet -max_dist 10.0 $wm_mask_defragged $outer_chamfer
 minccalc $quiet -clob -expression "A[0]<0.5" $wm_mask_defragged $negative_mask
 mincchamfer $quiet -max_dist 5.0 $negative_mask $inner_chamfer
 minccalc $quiet -clob -expression "$iso-A[0]+A[1]" \
-         $inner_chamfer $outer_chamfer $output_chamfer
+         $inner_chamfer $outer_chamfer "$output_chamfer"
 
 # output volume will be of type image: unsigned byte 0 to 255
 # seems incorrect, I think it should be float, but it works
